@@ -1,16 +1,98 @@
-# React + Vite
+# Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React + Vite dashboard application for managing clients, transactions, and business profiles with an intuitive user interface.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Client Management** - View and manage client profiles with contact information and activity tracking
+- **Transaction Tracking** - Monitor transactions with detailed history and status updates
+- **Dashboard Overview** - Get quick insights with an analytics dashboard
+- **Store Profiles** - Manage multiple store locations and their information
+- **User Profile** - Personal profile management and settings
+- **Scan Entry** - Quick entry system for scanning and recording data
+- **Responsive Design** - Mobile-friendly interface built with Tailwind CSS
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+- **React 18** - UI library
+- **Vite** - Lightning-fast build tool and dev server
+- **Tailwind CSS** - Utility-first CSS framework
+- **ESLint** - Code quality and consistency
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd Dashboard
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+### Development
+
+Start the development server with hot module reload:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+### Building
+
+Build the project for production:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+### Linting
+
+Run ESLint to check code quality:
+
+```bash
+npm run lint
+```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── clientProfile/     - Client profile related components
+│   ├── common/            - Reusable UI components
+│   ├── layout/            - Layout components (Header, Sidebar, etc.)
+│   └── profile/           - User profile components
+├── pages/                 - Page components for routing
+├── utils/                 - Utility functions
+├── App.jsx                - Main App component
+└── main.jsx               - Entry point
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## License
+
+This project is proprietary and confidential.
