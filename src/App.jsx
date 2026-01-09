@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useState } from 'react';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
@@ -6,28 +8,29 @@ import ClientProfile from './pages/ClientProfile';
 import ScanEntry from './pages/ScanEntry';
 import Transactions from './pages/Transactions';
 import StoreProfile from './pages/StoreProfile';
-import { useState } from 'react';
 import AuthLayout from './components/layout/AuthLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Landing from './pages/Landing';
+import { loadAuthFromStorage } from './store/slices/authSlice';
 
 const App = () => {
   const [isgetStarted, setIsgetStarted] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSigningUp, setIsSigningUp] = useState(false);
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(loadAuthFromStorage());
+  }, [dispatch]);
 
   const handleSetIsGetStarted = (value) => {
     if (value) {
-      const auth = window.localStorage.getItem('auth');
-      if (auth) {
-        setIsLoggedIn(true);
-      }
+      dispatch(loadAuthFromStorage());
     }
     setIsgetStarted(value);
   };
 
-  if (isLoggedIn) {
+  if (isAuthenticated) {
     return (
       <Router>
         <Routes>
@@ -47,9 +50,9 @@ const App = () => {
   return (
     <AuthLayout isgetStarted={isgetStarted} setIsgetStarted={handleSetIsGetStarted}>
       {isSigningUp ? (
-        <Signup onToggle={() => setIsSigningUp(false)} />
+        <Signup onToggle={() => setIsSigningUp(false)} setIsLoggedIn={() => {}} />
       ) : (
-        <Login onToggle={() => setIsSigningUp(true)} setIsLoggedIn={setIsLoggedIn} />
+        <Login onToggle={() => setIsSigningUp(true)} setIsLoggedIn={() => {}} />
       )}
     </AuthLayout>
   );
