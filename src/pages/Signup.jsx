@@ -1,25 +1,38 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { User, Mail, Phone, Lock } from 'lucide-react';
+import { Store, User, Mail, Phone, Lock, MapPin } from 'lucide-react';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
-import { useSignupMutation } from '../store/api/userApi';
+import { useSignupMutation } from '../store/api/storeAccountApi';
 import { setCredentials } from '../store/slices/authSlice';
 
 const Signup = ({ onToggle, setIsLoggedIn }) => {
-    const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '' });
+    const [formData, setFormData] = useState({ 
+        storeName: '', 
+        ownerName: '', 
+        email: '', 
+        phone: '', 
+        password: '',
+        storeType: 'GYM',
+        location: { address: '', lat: 0, lng: 0 }
+    });
     const [signup, { isLoading, error }] = useSignupMutation();
     const dispatch = useDispatch();
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        if (name === 'address') {
+            setFormData({ ...formData, location: { ...formData.location, address: value } });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleSignup = async (e) => {
         e.preventDefault();
         try {
             const result = await signup(formData).unwrap();
-            dispatch(setCredentials({ user: result.data, token: result.token }));
+            dispatch(setCredentials({ store: result }));
             if (setIsLoggedIn) setIsLoggedIn(true);
         } catch (err) {
             console.error('Signup failed:', err);
@@ -29,19 +42,31 @@ const Signup = ({ onToggle, setIsLoggedIn }) => {
     return (
         <div className="w-full">
             <div className="text-center mb-8">
-                <h1 className="text-gray-900 font-bold text-3xl mb-2 tracking-tight">Create Account</h1>
-                <p className="text-gray-500 text-sm">Get started with your dashboard today</p>
+                <h1 className="text-gray-900 font-bold text-3xl mb-2 tracking-tight">Create Store Account</h1>
+                <p className="text-gray-500 text-sm">Register your business on PulsePay</p>
             </div>
 
             <form className="space-y-4" onSubmit={handleSignup}>
                 <Input 
-                    id="fullName"
-                    name="fullName"
+                    id="storeName"
+                    name="storeName"
                     type="text"
-                    label="Full Name"
+                    label="Store Name"
+                    placeholder="FitZone Gym"
+                    required
+                    value={formData.storeName}
+                    onChange={handleChange}
+                    leftIcon={<Store className="w-5 h-5" />}
+                />
+
+                <Input 
+                    id="ownerName"
+                    name="ownerName"
+                    type="text"
+                    label="Owner Name"
                     placeholder="John Doe"
                     required
-                    value={formData.fullName}
+                    value={formData.ownerName}
                     onChange={handleChange}
                     leftIcon={<User className="w-5 h-5" />}
                 />
@@ -51,7 +76,7 @@ const Signup = ({ onToggle, setIsLoggedIn }) => {
                     name="email"
                     type="email"
                     label="Email Address"
-                    placeholder="name@company.com"
+                    placeholder="store@company.com"
                     required
                     value={formData.email}
                     onChange={handleChange}
@@ -68,6 +93,37 @@ const Signup = ({ onToggle, setIsLoggedIn }) => {
                     value={formData.phone}
                     onChange={handleChange}
                     leftIcon={<Phone className="w-5 h-5" />}
+                />
+
+                <div className="space-y-1.5">
+                    <label htmlFor="storeType" className="text-sm font-semibold text-gray-700 ml-1">
+                        Store Type
+                    </label>
+                    <select
+                        id="storeType"
+                        name="storeType"
+                        value={formData.storeType}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium shadow-sm"
+                    >
+                        <option value="GYM">Gym</option>
+                        <option value="EV">EV Charging</option>
+                        <option value="WIFI">WiFi Hotspot</option>
+                        <option value="PARKING">Parking</option>
+                    </select>
+                </div>
+
+                <Input 
+                    id="address"
+                    name="address"
+                    type="text"
+                    label="Address"
+                    placeholder="123 Main St, City"
+                    required
+                    value={formData.location.address}
+                    onChange={handleChange}
+                    leftIcon={<MapPin className="w-5 h-5" />}
                 />
 
                 <Input 

@@ -191,6 +191,56 @@ Create a new user.
 
 ---
 
+#### `POST /api/users/login`
+
+Login a user.
+
+**Request Body:**
+
+| Field      | Type   | Required | Description         |
+|------------|--------|----------|---------------------|
+| `email`    | string | Yes      | User email address  |
+| `password` | string | Yes      | User password       |
+
+**Example Request:**
+
+```json
+{
+  "email": "john@example.com",
+  "password": "securepass123"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "id": "64a1b2c3d4e5f6789...",
+    "fullName": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "walletId": "64a1b2c3d4e5f6789...",
+    "status": "ACTIVE",
+    "kycLevel": "BASIC",
+    "createdAt": "2026-01-09T10:00:00.000Z",
+    "updatedAt": "2026-01-09T10:00:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| Status | Message                                    |
+|--------|--------------------------------------------|
+| `400`  | Please provide email and password          |
+| `401`  | Invalid credentials                        |
+| `401`  | Account is blocked. Please contact support.|
+
+---
+
 #### `GET /api/users/:id`
 
 Get a user by ID.
@@ -331,6 +381,62 @@ GET /api/stores?storeType=GYM&verificationStatus=VERIFIED
 
 ---
 
+#### `POST /api/stores/login`
+
+Login a store.
+
+**Request Body:**
+
+| Field      | Type   | Required | Description         |
+|------------|--------|----------|---------------------|
+| `email`    | string | Yes      | Store email address |
+| `password` | string | Yes      | Store password      |
+
+**Example Request:**
+
+```json
+{
+  "email": "powercharge@example.com",
+  "password": "securepass123"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "id": "64a1b2c3d4e5f6789...",
+    "storeName": "PowerCharge EV Station",
+    "ownerName": "Bob Johnson",
+    "email": "powercharge@example.com",
+    "phone": "+1122334455",
+    "walletId": "64a1b2c3d4e5f6789...",
+    "storeType": "EV",
+    "location": {
+      "address": "456 Electric Ave, City",
+      "lat": 40.7580,
+      "lng": -73.9855
+    },
+    "verificationStatus": "VERIFIED",
+    "isActive": true,
+    "createdAt": "2026-01-09T10:00:00.000Z",
+    "updatedAt": "2026-01-09T10:00:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| Status | Message                           |
+|--------|-----------------------------------|
+| `400`  | Please provide an email and password |
+| `401`  | Invalid credentials               |
+
+---
+
 #### `POST /api/stores`
 
 Create a new store.
@@ -370,8 +476,9 @@ Create a new store.
 ```json
 {
   "success": true,
+  "message": "Store account created successfully",
   "data": {
-    "_id": "64a1b2c3d4e5f6789...",
+    "id": "64a1b2c3d4e5f6789...",
     "storeName": "PowerCharge EV Station",
     "ownerName": "Bob Johnson",
     "email": "powercharge@example.com",
@@ -384,7 +491,9 @@ Create a new store.
       "lng": -73.9855
     },
     "verificationStatus": "PENDING",
-    "isActive": true
+    "isActive": true,
+    "createdAt": "2026-01-10T10:00:00.000Z",
+    "updatedAt": "2026-01-10T10:00:00.000Z"
   }
 }
 ```

@@ -7,7 +7,7 @@ import Clients from './pages/Clients';
 import ClientProfile from './pages/ClientProfile';
 import ScanEntry from './pages/ScanEntry';
 import Transactions from './pages/Transactions';
-import StoreProfile from './pages/StoreProfile';
+import Profile from './pages/Profile';
 import AuthLayout from './components/layout/AuthLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -16,11 +16,16 @@ import { loadAuthFromStorage } from './store/slices/authSlice';
 const App = () => {
   const [isgetStarted, setIsgetStarted] = useState(false);
   const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    dispatch(loadAuthFromStorage());
+    const checkAuth = async () => {
+      await dispatch(loadAuthFromStorage());
+      setIsAuthChecking(false);
+    };
+    checkAuth();
   }, [dispatch]);
 
   const handleSetIsGetStarted = (value) => {
@@ -29,6 +34,8 @@ const App = () => {
     }
     setIsgetStarted(value);
   };
+
+  if (isAuthChecking) return null; // Or a loading spinner
 
   if (isAuthenticated) {
     return (
@@ -40,7 +47,7 @@ const App = () => {
             <Route path="clients/:id" element={<ClientProfile />} />
             <Route path="scan-entry" element={<ScanEntry />} />
             <Route path="transactions" element={<Transactions />} />
-            <Route path="store-profile" element={<StoreProfile />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>
       </Router>

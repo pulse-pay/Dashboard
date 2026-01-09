@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Bell, ChevronDown } from 'lucide-react';
 
 const TopBar = () => {
   const navigate = useNavigate();
-  const storeName = 'FitZone Gym';
+  const { store } = useSelector((state) => state.auth);
+  const storeName = store?.storeName || 'Store';
 
   return (
     <header className="fixed top-0 left-0 md:left-72 right-0 h-20 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 z-20 flex items-center justify-end px-6 lg:px-10 transition-all duration-300">
@@ -21,7 +23,7 @@ const TopBar = () => {
 
         {/* Profile / Settings Dropdown Trigger */}
         <button
-          onClick={() => navigate('/store-profile')}
+          onClick={() => navigate('/profile')}
           className="flex items-center gap-3 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all duration-200 group"
         >
           <div className="relative">

@@ -1,39 +1,41 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
+    store: null,
+    isAuthenticated: false,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
-  initialState,
-  reducers: {
-    setCredentials: (state, action) => {
-      const { user, token } = action.payload;
-      state.user = user;
-      state.token = token;
-      state.isAuthenticated = true;
-      localStorage.setItem('auth', JSON.stringify({ user, token }));
+    name: 'auth',
+    initialState,
+    reducers: {
+        setCredentials: (state, action) => {
+            const { store } = action.payload;
+            state.store = store;
+            state.isAuthenticated = true;
+            localStorage.setItem('auth', JSON.stringify({ store }));
+        },
+        updateStoreProfile: (state, action) => {
+            if (state.store) {
+                state.store = { ...state.store, ...action.payload };
+                localStorage.setItem('auth', JSON.stringify({ store: state.store }));
+            }
+        },
+        logout: (state) => {
+            state.store = null;
+            state.isAuthenticated = false;
+            localStorage.removeItem('auth');
+        },
+        loadAuthFromStorage: (state) => {
+            const auth = localStorage.getItem('auth');
+            if (auth) {
+                const { store } = JSON.parse(auth);
+                state.store = store;
+                state.isAuthenticated = true;
+            }
+        },
     },
-    logout: (state) => {
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false;
-      localStorage.removeItem('auth');
-    },
-    loadAuthFromStorage: (state) => {
-      const auth = localStorage.getItem('auth');
-      if (auth) {
-        const { user, token } = JSON.parse(auth);
-        state.user = user;
-        state.token = token;
-        state.isAuthenticated = true;
-      }
-    },
-  },
 });
 
-export const { setCredentials, logout, loadAuthFromStorage } = authSlice.actions;
+export const { setCredentials, updateStoreProfile, logout, loadAuthFromStorage } = authSlice.actions;
 export default authSlice.reducer;

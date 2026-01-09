@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Mail, Lock } from 'lucide-react';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
-import { useLoginMutation } from '../store/api/userApi';
+import { useLoginMutation } from '../store/api/storeAccountApi';
 import { setCredentials } from '../store/slices/authSlice';
  
 const Login = ({ onToggle, setIsLoggedIn }) => {
@@ -19,7 +19,7 @@ const Login = ({ onToggle, setIsLoggedIn }) => {
         e.preventDefault();
         try {
             const result = await login(formData).unwrap();
-            dispatch(setCredentials({ user: result.data, token: result.token }));
+            dispatch(setCredentials({ store: result }));
             if (setIsLoggedIn) setIsLoggedIn(true);
         } catch (err) {
             console.error('Login failed:', err);

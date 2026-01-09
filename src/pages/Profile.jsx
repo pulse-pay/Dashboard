@@ -1,39 +1,38 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { User, Mail, Phone, Camera, Calendar, ShieldCheck, Activity, Edit2, MapPin } from 'lucide-react';
-import { useUpdateUserMutation } from '../store/api/userApi';
-import { setCredentials } from '../store/slices/authSlice';
+import { User, Mail, Phone, Camera, Calendar, ShieldCheck, Activity, Edit2, MapPin, Store } from 'lucide-react';
+import { useUpdateStoreMutation } from '../store/api/storeAccountApi';
+import { updateStoreProfile } from '../store/slices/authSlice';
 import EditableField from '../components/profile/EditableField';
 import StatCard from '../components/profile/StatCard';
 
 const Profile = () => {
-  const { user, token } = useSelector((state) => state.auth);
-  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const { store } = useSelector((state) => state.auth);
+  const [updateStore, { isLoading }] = useUpdateStoreMutation();
   const dispatch = useDispatch();
 
   const handleUpdate = async (field, value) => {
     try {
-      if (!user?._id) return;
+      if (!store?._id && !store?.id) return;
       
-      const result = await updateUser({ 
-        id: user._id, 
+      const storeId = store._id || store.id;
+      const result = await updateStore({ 
+        id: storeId, 
         [field]: value 
       }).unwrap();
       
-      dispatch(setCredentials({ 
-         user: result.data || { ...user, [field]: value }, 
-         token 
-      }));
+      // Update the Redux store with the updated data
+      dispatch(updateStoreProfile(result));
     } catch (error) {
       console.error('Failed to update profile:', error);
     }
   };
 
-  if (!user) {
+  if (!store) {
     return (
       <div className="flex items-center justify-center h-full p-12">
          <div className="flex flex-col items-center gap-4">
              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-             <p className="text-gray-500 font-medium">Loading user profile...</p>
+             <p className="text-gray-500 font-medium">Loading store profile...</p>
          </div>
       </div>
     );
@@ -53,10 +52,10 @@ const Profile = () => {
           {/* Avatar Section */}
           <div className="relative group">
             <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-50 flex items-center justify-center text-4xl font-bold text-gray-400 group-hover:scale-105 transition-transform duration-300">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+              {store.avatar ? (
+                <img src={store.avatar} alt={store.storeName} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-blue-600 font-bold">{user.fullName?.charAt(0).toUpperCase() || 'U'}</span>
+                <span className="text-blue-600 font-bold">{store.storeName?.charAt(0).toUpperCase() || 'S'}</span>
               )}
             </div>
             <button className="absolute bottom-1 right-1 p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg border border-white transition-all transform hover:-translate-y-0.5">
@@ -64,25 +63,32 @@ const Profile = () => {
             </button>
           </div>
 
-          {/* User Info */}
+          {/* Store Info */}
           <div className="text-center md:text-left flex-1 space-y-2">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-               {user.fullName || 'User Name'}
+               {store.storeName || 'Store Name'}
             </h1>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-                 {user.role || 'Member'}
+                 {store.storeType || 'STORE'}
+               </span>
+               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                 store.verificationStatus === 'VERIFIED' ? 'bg-green-50 text-green-700 border border-green-100' :
+                 store.verificationStatus === 'REJECTED' ? 'bg-red-50 text-red-700 border border-red-100' :
+                 'bg-yellow-50 text-yellow-700 border border-yellow-100'
+               }`}>
+                 {store.verificationStatus || 'PENDING'}
                </span>
                <div className="flex items-center gap-1.5 text-sm text-gray-500 font-medium bg-white/60 px-2 py-0.5 rounded-md border border-gray-100/50">
                   <Mail className="w-3.5 h-3.5 text-gray-400" />
-                  {user.email}
+                  {store.email}
                </div>
             </div>
           </div>
           
           <div className="flex gap-3">
               <button className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
-                  View Public Profile
+                  View Services
               </button>
               <button className="px-5 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-colors shadow-lg shadow-gray-200">
                   Settings
@@ -97,16 +103,24 @@ const Profile = () => {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">Personal Information</h2>
-                        <p className="text-sm text-gray-500">Manage your primary contact information</p>
+                        <h2 className="text-lg font-bold text-gray-900">Store Information</h2>
+                        <p className="text-sm text-gray-500">Manage your store details</p>
                     </div>
                 </div>
                 
                 <div className="space-y-4">
                     <EditableField
-                        label="Full Name"
-                        field="fullName"
-                        value={user.fullName}
+                        label="Store Name"
+                        field="storeName"
+                        value={store.storeName}
+                        onSave={handleUpdate}
+                        isUpdating={isLoading}
+                        icon={Store}
+                    />
+                    <EditableField
+                        label="Owner Name"
+                        field="ownerName"
+                        value={store.ownerName}
                         onSave={handleUpdate}
                         isUpdating={isLoading}
                         icon={User}
@@ -114,7 +128,7 @@ const Profile = () => {
                     <EditableField
                         label="Email Address"
                         field="email"
-                        value={user.email}
+                        value={store.email}
                         onSave={handleUpdate}
                         isUpdating={isLoading}
                         icon={Mail}
@@ -122,15 +136,15 @@ const Profile = () => {
                     <EditableField
                         label="Phone Number"
                         field="phone"
-                        value={user.phone}
+                        value={store.phone}
                         onSave={handleUpdate}
                         isUpdating={isLoading}
                         icon={Phone}
                     />
                     <EditableField
                          label="Location"
-                         field="location"
-                         value={user.location || 'San Francisco, CA'}
+                         field="location.address"
+                         value={store.location?.address || 'Not set'}
                          onSave={handleUpdate}
                          isUpdating={isLoading}
                          icon={MapPin}
@@ -143,23 +157,23 @@ const Profile = () => {
         <div className="space-y-6">
             <div className="grid gap-4">
                  <StatCard 
-                    label="Join Date"
-                    value={user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
-                    subtext="Member since"
+                    label="Registered"
+                    value={store.createdAt ? new Date(store.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                    subtext="Store created"
                     icon={Calendar}
                  />
                  
                  <StatCard 
-                    label="Account Status"
-                    value="Active"
-                    trend="active"
+                    label="Store Status"
+                    value={store.isActive ? 'Active' : 'Inactive'}
+                    trend={store.isActive ? 'active' : 'inactive'}
                     icon={ShieldCheck}
                  />
 
                  <StatCard 
-                    label="Last Activity"
-                    value="Just now"
-                    subtext="Online on Web"
+                    label="Verification"
+                    value={store.verificationStatus || 'PENDING'}
+                    subtext="Current status"
                     icon={Activity}
                  />
             </div>
