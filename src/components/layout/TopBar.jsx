@@ -1,28 +1,59 @@
 import { useNavigate } from 'react-router-dom';
-import { Settings, Bell } from 'lucide-react';
-import Avatar from '../common/Avatar';
+import { Settings, Bell, Search, ChevronDown } from 'lucide-react';
 
 const TopBar = () => {
   const navigate = useNavigate();
   const storeName = 'FitZone Gym';
 
   return (
-    <header className="fixed top-0 left-[260px] right-0 h-16 bg-white border-b border-border z-20 flex items-center justify-between px-6 shadow-sm">
-      <div className="flex items-center flex-1">
-        <h2 className="text-lg font-semibold text-text">{storeName}</h2>
+    <header className="fixed top-0 left-0 md:left-72 right-0 h-20 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 z-20 flex items-center justify-between px-6 lg:px-10 transition-all duration-300">
+      
+      {/* Search Bar - Interactive & Modern */}
+      <div className="flex-1 max-w-xl">
+        <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+            </div>
+            <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 sm:text-sm shadow-sm hover:shadow-md"
+                placeholder="Search resources, clients, or transactions..."
+            />
+             <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-xs bg-gray-200 px-1.5 py-0.5 rounded border border-gray-300 font-mono">/</span>
+            </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button className="p-2 text-text-secondary hover:bg-background rounded-lg transition-colors">
+      {/* Right Actions */}
+      <div className="flex items-center gap-6 ml-6">
+        
+        {/* Notification Bell with Badge */}
+        <button className="relative p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:-translate-y-0.5">
           <Bell className="w-5 h-5" />
+          <span className="absolute top-2 right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
         </button>
+
+        <div className="h-8 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+
+        {/* Profile / Settings Dropdown Trigger */}
         <button
           onClick={() => navigate('/store-profile')}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg bg-background hover:bg-border text-text transition-colors"
+          className="flex items-center gap-3 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all duration-200 group"
         >
-          <Settings className="w-4 h-4" />
-          <span className="text-sm font-medium">Settings</span>
-          <Avatar name={storeName} size="sm" className="ml-1" />
+          <div className="relative">
+             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold ring-2 ring-white shadow-md">
+                {storeName.charAt(0)}
+             </div>
+             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+          </div>
+          
+          <div className="hidden md:block text-left">
+             <p className="text-sm font-bold text-gray-800 tracking-tight group-hover:text-blue-600 transition-colors">{storeName}</p>
+             <p className="text-xs text-gray-500 font-medium">Administrator</p>
+          </div>
+          
+          <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:rotate-180" />
         </button>
       </div>
     </header>

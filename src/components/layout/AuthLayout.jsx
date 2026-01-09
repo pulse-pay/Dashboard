@@ -3,44 +3,26 @@ import Navbar from '../common/Navbar';
 import Landing from '../../pages/Landing';
 
 const AuthLayout = ({ children, isgetStarted, setIsgetStarted }) => {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-    const handleMouseMove = (e) => {
-        const { clientX, clientY } = e;
-        const { innerWidth, innerHeight } = window;
-        setMousePosition({
-            x: (clientX / innerWidth) * 15,
-            y: (clientY / innerHeight) * 15,
-        });
-    };
-
     return (
-        <div className="h-screen w-full relative overflow-hidden flex justify-center items-center bg-gray-900" onMouseMove={handleMouseMove}>
-
-            {/* Background Image Layer */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-black/30 z-10" /> {/* Dark overlay for better text contrast/focus */}
-                <img
-                    src="https://zqjexxnaxfpdqiewwugv.supabase.co/storage/v1/object/sign/cloud/clouds.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iYjI3ZjU1OS1hNWU1LTQ1YjYtOWMwZC0zNzRkOGNkMjE5YzMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjbG91ZC9jbG91ZHMuanBnIiwiaWF0IjoxNzY3OTE2NjM4LCJleHAiOjE3NzA1MDg2Mzh9.OXjkANZYPF2z3VLm8okJL2KjmppLNzJhDSXnp_kBz1w"
-                    alt="Background"
-                    className="w-full h-full object-cover scale-110"
-                    style={{
-                        transform: `scale(1.1) translate(${mousePosition.x * -1}px, ${mousePosition.y * -1}px)`,
-                        transition: 'transform 0.2s ease-out'
-                    }}
-                />
+        <div className="min-h-screen w-full relative flex flex-col bg-gray-50">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                 <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] bg-blue-100/40 rounded-full blur-3xl opacity-50"></div>
+                 <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-3xl opacity-50"></div>
             </div>
 
-            {/* Content Card container */}
-            <div className="relative z-10 flex flex-col items-center w-full h-full justify-between px-4 py-8">
+            <div className="relative z-10 flex flex-col min-h-screen">
                 <Navbar setIsgetStarted={setIsgetStarted} />
-                {!isgetStarted ? <Landing setIsgetStarted={setIsgetStarted} /> :
-                    <div className="relative z-20 w-full max-w-md p-6 mx-auto flex-1 flex items-center justify-center">
-                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden p-8 sm:p-10">
+                
+                <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+                    {!isgetStarted ? (
+                        <Landing setIsgetStarted={setIsgetStarted} />
+                    ) : (
+                        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-blue-900/5 border border-gray-100 p-8 sm:p-10 animate-fade-in-up">
                             {children}
                         </div>
-                    </div>
-                }
+                    )}
+                </div>
             </div>
         </div>
     );

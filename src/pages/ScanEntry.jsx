@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { CheckCircle, XCircle, Camera } from 'lucide-react';
+import { CheckCircle, XCircle, Camera, QrCode, RefreshCw, X } from 'lucide-react';
 
 const ScanEntry = () => {
   const [scanning, setScanning] = useState(false);
@@ -20,149 +20,195 @@ const ScanEntry = () => {
           qrbox: { width: 250, height: 250 },
         },
         (decodedText) => {
-          // QR code detected
           handleScanSuccess(decodedText);
         },
-        () => {
-          // Ignore scanning errors - this is intentional to avoid spam
-        }
+        () => {}
       );
       setScanning(true);
       setError(null);
     } catch (err) {
-      setError('Failed to start camera. Please check permissions.');
-      console.error('Error starting QR scanner:', err);
+      setError('Camera access required to scan QR codes.');
+      console.error(err);
     }
   };
 
-  const stopScanning = () => {
-    if (html5QrCode) {
-      html5QrCode
-        .stop()
-        .then(() => {
-          html5QrCode.clear();
-          setHtml5QrCode(null);
-          setScanning(false);
-          setScannedId(null);
-          setError(null);
-        })
-        .catch((err) => {
-          console.error('Error stopping scanner:', err);
-        });
+  const stopScanning = async () => {
+    if (html5QrCode && scanning) {
+      try {
+        await html5QrCode.stop();
+        html5QrCode.clear();
+        setHtml5QrCode(null);
+        setScanning(false);
+        setScannedId(null);
+        setError(null);
+      } catch (err) {
+        console.error('Error stopping scanner:', err);
+      }
     }
   };
+
+  // Safe cleanup
+  const handleStopClick = async () => {
+      if (html5QrCode) {
+          try {
+              await html5QrCode.stop();
+              html5QrCode.clear();
+          } catch(e) {}
+          setHtml5QrCode(null);
+          setScanning(false);
+      }
+  }
 
   const handleScanSuccess = (decodedText) => {
     setScannedId(decodedText);
-    stopScanning();
     
-    // Auto-reset after 5 seconds
-    setTimeout(() => {
-      setScannedId(null);
-    }, 5000);
+    // We pause scanning logic visually, but the library might need explicit stop
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            setHtml5QrCode(null);
+            setScanning(false);
+        }).catch(err => console.error(err));
+    }
+
+    // Auto-reset handled by UI button now for better UX
   };
 
   useEffect(() => {
     return () => {
-      if (html5QrCode) {
+      if (html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().catch(() => {});
       }
     };
   }, [html5QrCode]);
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-text">Scan Entry</h1>
-        <p className="text-text-secondary mt-2">Scan customer QR code to verify access</p>
+    <div className="max-w-3xl mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Access Verification</h1>
+        <p className="text-gray-500">Scan customer QR codes to verify membership status</p>
       </div>
 
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-surface rounded-lg shadow-sm p-6 border border-border">
-          {!scanning && !scannedId && (
-            <div className="text-center py-12">
-              <div className="mb-6">
-                <div className="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                  <Camera className="w-12 h-12 text-primary" />
+      <div className="bg-white rounded-3xl shadow-xl shadow-gray-200 border border-gray-100 overflow-hidden relative min-h-[500px] flex flex-col">
+        
+        {/* Header inside card */}
+        <div className="absolute top-0 left-0 right-0 p-6 z-10 flex justify-between items-start pointer-events-none">
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 pointer-events-auto">
+                {scanning ? (
+                    <span className="flex items-center gap-2">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        Live Camera
+                    </span>
+                ) : (
+                    <span className="flex items-center gap-2 text-gray-500">
+                        <Camera className="w-4 h-4" />
+                        Camera Idle
+                    </span>
+                )}
+            </div>
+            
+            {scanning && (
+                <button 
+                    onClick={handleStopClick}
+                    className="pointer-events-auto p-2 bg-white rounded-full hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors"
+                >
+                    <X className="w-5 h-5 text-gray-600" />
+                </button>
+            )}
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 relative">
+            
+            {/* 1. Idle State */}
+            {!scanning && !scannedId && !error && (
+                <div className="text-center space-y-6 max-w-sm">
+                    <div className="w-24 h-24 bg-white rounded-3xl shadow-sm border border-gray-200 flex items-center justify-center mx-auto rotate-3 hover:rotate-6 transition-transform duration-500">
+                        <QrCode className="w-10 h-10 text-blue-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900">Ready to Scan</h2>
+                        <p className="text-gray-500 mt-2 text-sm leading-relaxed">
+                            Ensure the customer's QR code is clearly visible and well-lit.
+                        </p>
+                    </div>
+                    <button
+                        onClick={startScanning}
+                        className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5"
+                    >
+                        Activate Camera
+                    </button>
                 </div>
-                <h2 className="text-xl font-semibold text-text mb-2">
-                  Ready to Scan
-                </h2>
-                <p className="text-text-secondary mb-6">
-                  Click the button below to start scanning QR codes
-                </p>
-                <button
-                  onClick={startScanning}
-                  className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium shadow-sm"
-                >
-                  Start Camera
-                </button>
-              </div>
-            </div>
-          )}
+            )}
 
-          {scanning && !scannedId && (
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-text">Scanning...</h2>
-                <button
-                  onClick={stopScanning}
-                  className="px-4 py-2 bg-background text-text-secondary rounded-lg hover:bg-border transition-colors text-sm font-medium"
-                >
-                  Stop
-                </button>
-              </div>
-              <div
-                id="reader"
-                className="w-full rounded-lg overflow-hidden bg-gray-100"
-                style={{ minHeight: '400px' }}
-              />
-            </div>
-          )}
-
-          {scannedId && (
-            <div className="text-center py-12">
-              <div className="mb-6">
-                <div className="w-24 h-24 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle className="w-12 h-12 text-success" />
+            {/* 2. Scanning State - The div#reader is populated by html5-qrcode */}
+            {scanning && (
+                <div className="w-full max-w-md aspect-square relative rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white">
+                    <div id="reader" className="w-full h-full object-cover"></div>
+                    {/* Overlay Frame */}
+                    <div className="absolute inset-0 border-[40px] border-black/50 pointer-events-none">
+                        <div className="absolute inset-0 border-2 border-white/50"></div>
+                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500 -mt-1 -ml-1"></div>
+                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 -mt-1 -mr-1"></div>
+                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 -mb-1 -ml-1"></div>
+                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 -mb-1 -mr-1"></div>
+                    </div>
+                    <p className="absolute bottom-8 left-0 right-0 text-center text-white/90 text-sm font-medium z-10 drop-shadow-md">
+                        Align QR code within the frame
+                    </p>
                 </div>
-                <h2 className="text-xl font-semibold text-success mb-2">
-                  Verified: Access Granted
-                </h2>
-                <p className="text-text-secondary mb-2">Customer ID:</p>
-                <p className="text-lg font-mono font-semibold text-text mb-6">
-                  {scannedId}
-                </p>
-                <button
-                  onClick={() => {
-                    setScannedId(null);
-                    startScanning();
-                  }}
-                  className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium shadow-sm"
-                >
-                  Scan Another
-                </button>
-              </div>
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <XCircle className="w-8 h-8 text-error" />
-              </div>
-              <p className="text-error mb-4">{error}</p>
-              <button
-                onClick={() => {
-                  setError(null);
-                  startScanning();
-                }}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
+            {/* 3. Success State */}
+            {scannedId && (
+                <div className="text-center space-y-6 animate-in fade-in zoom-in duration-300">
+                    <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto border-4 border-green-100">
+                        <CheckCircle className="w-12 h-12 text-green-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Verified Access</h2>
+                        <div className="mt-4 p-4 bg-white rounded-xl border border-gray-200 font-mono text-sm text-gray-600 max-w-xs mx-auto break-all shadow-sm">
+                            {scannedId}
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setScannedId(null);
+                            startScanning();
+                        }}
+                        className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-colors"
+                    >
+                        Scan Next Customer
+                    </button>
+                </div>
+            )}
+
+            {/* 4. Error State */}
+            {error && (
+                <div className="text-center space-y-6">
+                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+                        <XCircle className="w-10 h-10 text-red-500" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-900">Scanning Failed</h3>
+                        <p className="text-red-500 mt-1">{error}</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setError(null);
+                            startScanning();
+                        }}
+                        className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors mx-auto"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        Try Again
+                    </button>
+                </div>
+            )}
+
         </div>
       </div>
     </div>

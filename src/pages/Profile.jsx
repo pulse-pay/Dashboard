@@ -1,48 +1,179 @@
-import { User, Mail, Phone, Settings } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { User, Mail, Phone, Camera, Calendar, ShieldCheck, Activity, Edit2, MapPin } from 'lucide-react';
+import { useUpdateUserMutation } from '../store/api/userApi';
+import { setCredentials } from '../store/slices/authSlice';
+import EditableField from '../components/profile/EditableField';
+import StatCard from '../components/profile/StatCard';
 
 const Profile = () => {
-  return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-600 mt-1">Manage your account settings</p>
-      </div>
+  const { user, token } = useSelector((state) => state.auth);
+  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const dispatch = useDispatch();
 
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <div className="flex items-center gap-6 mb-6">
-          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-            U
+  const handleUpdate = async (field, value) => {
+    try {
+      if (!user?._id) return;
+      
+      const result = await updateUser({ 
+        id: user._id, 
+        [field]: value 
+      }).unwrap();
+      
+      dispatch(setCredentials({ 
+         user: result.data || { ...user, [field]: value }, 
+         token 
+      }));
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-full p-12">
+         <div className="flex flex-col items-center gap-4">
+             <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+             <p className="text-gray-500 font-medium">Loading user profile...</p>
+         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Hero Header Section */}
+      <div className="relative overflow-hidden rounded-3xl bg-white border border-gray-100 shadow-sm">
+        {/* Decorative Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/30"></div>
+        <div className="absolute top-0 right-0 p-12 opacity-50">
+           <div className="absolute w-64 h-64 bg-blue-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        </div>
+        
+        <div className="relative px-8 py-10 flex flex-col md:flex-row items-center gap-8">
+          {/* Avatar Section */}
+          <div className="relative group">
+            <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-50 flex items-center justify-center text-4xl font-bold text-gray-400 group-hover:scale-105 transition-transform duration-300">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-blue-600 font-bold">{user.fullName?.charAt(0).toUpperCase() || 'U'}</span>
+              )}
+            </div>
+            <button className="absolute bottom-1 right-1 p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg border border-white transition-all transform hover:-translate-y-0.5">
+              <Camera className="w-4 h-4" />
+            </button>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">User Name</h2>
-            <p className="text-gray-600">user@example.com</p>
+
+          {/* User Info */}
+          <div className="text-center md:text-left flex-1 space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+               {user.fullName || 'User Name'}
+            </h1>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                 {user.role || 'Member'}
+               </span>
+               <div className="flex items-center gap-1.5 text-sm text-gray-500 font-medium bg-white/60 px-2 py-0.5 rounded-md border border-gray-100/50">
+                  <Mail className="w-3.5 h-3.5 text-gray-400" />
+                  {user.email}
+               </div>
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+              <button className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+                  View Public Profile
+              </button>
+              <button className="px-5 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-colors shadow-lg shadow-gray-200">
+                  Settings
+              </button>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-            <Mail className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-600">Email</p>
-              <p className="text-gray-900">user@example.com</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Info Column */}
+        <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Personal Information</h2>
+                        <p className="text-sm text-gray-500">Manage your primary contact information</p>
+                    </div>
+                </div>
+                
+                <div className="space-y-4">
+                    <EditableField
+                        label="Full Name"
+                        field="fullName"
+                        value={user.fullName}
+                        onSave={handleUpdate}
+                        isUpdating={isLoading}
+                        icon={User}
+                    />
+                    <EditableField
+                        label="Email Address"
+                        field="email"
+                        value={user.email}
+                        onSave={handleUpdate}
+                        isUpdating={isLoading}
+                        icon={Mail}
+                    />
+                    <EditableField
+                        label="Phone Number"
+                        field="phone"
+                        value={user.phone}
+                        onSave={handleUpdate}
+                        isUpdating={isLoading}
+                        icon={Phone}
+                    />
+                    <EditableField
+                         label="Location"
+                         field="location"
+                         value={user.location || 'San Francisco, CA'}
+                         onSave={handleUpdate}
+                         isUpdating={isLoading}
+                         icon={MapPin}
+                    />
+                </div>
             </div>
-          </div>
+        </div>
 
-          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-            <Phone className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-600">Phone</p>
-              <p className="text-gray-900">+1 (555) 123-4567</p>
-            </div>
-          </div>
+        {/* Side Column: Stats */}
+        <div className="space-y-6">
+            <div className="grid gap-4">
+                 <StatCard 
+                    label="Join Date"
+                    value={user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                    subtext="Member since"
+                    icon={Calendar}
+                 />
+                 
+                 <StatCard 
+                    label="Account Status"
+                    value="Active"
+                    trend="active"
+                    icon={ShieldCheck}
+                 />
 
-          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-            <Settings className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-600">Settings</p>
-              <p className="text-gray-900">Manage preferences</p>
+                 <StatCard 
+                    label="Last Activity"
+                    value="Just now"
+                    subtext="Online on Web"
+                    icon={Activity}
+                 />
             </div>
-          </div>
+
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-lg p-6 text-white text-center">
+                 <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                     <ShieldCheck className="w-6 h-6 text-green-400" />
+                 </div>
+                 <h3 className="font-bold text-lg mb-2">Account Security</h3>
+                 <p className="text-gray-400 text-sm mb-6">Two-factor authentication is currently enabled for your account.</p>
+                 <button className="w-full py-2.5 bg-white text-gray-900 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                     Manage Security
+                 </button>
+            </div>
         </div>
       </div>
     </div>
@@ -50,4 +181,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
