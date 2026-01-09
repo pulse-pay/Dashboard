@@ -10,6 +10,35 @@ const Profile = () => {
   const [updateStore, { isLoading }] = useUpdateStoreMutation();
   const dispatch = useDispatch();
 
+  const storeFields = [
+    { label: 'Store Name', field: 'storeName', value: store?.storeName, icon: Store },
+    { label: 'Owner Name', field: 'ownerName', value: store?.ownerName, icon: User },
+    { label: 'Email Address', field: 'email', value: store?.email, icon: Mail },
+    { label: 'Phone Number', field: 'phone', value: store?.phone, icon: Phone },
+    { label: 'Location', field: 'location.address', value: store?.location?.address || 'Not set', icon: MapPin },
+  ];
+
+  const statsCards = [
+    { 
+      label: 'Registered', 
+      value: store?.createdAt ? new Date(store.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A',
+      subtext: 'Store created',
+      icon: Calendar 
+    },
+    { 
+      label: 'Store Status', 
+      value: store?.isActive ? 'Active' : 'Inactive',
+      trend: store?.isActive ? 'active' : 'inactive',
+      icon: ShieldCheck 
+    },
+    { 
+      label: 'Verification', 
+      value: store?.verificationStatus || 'PENDING',
+      subtext: 'Current status',
+      icon: Activity 
+    },
+  ];
+
   const handleUpdate = async (field, value) => {
     try {
       if (!store?._id && !store?.id) return;
@@ -109,46 +138,17 @@ const Profile = () => {
                 </div>
                 
                 <div className="space-y-4">
-                    <EditableField
-                        label="Store Name"
-                        field="storeName"
-                        value={store.storeName}
-                        onSave={handleUpdate}
-                        isUpdating={isLoading}
-                        icon={Store}
-                    />
-                    <EditableField
-                        label="Owner Name"
-                        field="ownerName"
-                        value={store.ownerName}
-                        onSave={handleUpdate}
-                        isUpdating={isLoading}
-                        icon={User}
-                    />
-                    <EditableField
-                        label="Email Address"
-                        field="email"
-                        value={store.email}
-                        onSave={handleUpdate}
-                        isUpdating={isLoading}
-                        icon={Mail}
-                    />
-                    <EditableField
-                        label="Phone Number"
-                        field="phone"
-                        value={store.phone}
-                        onSave={handleUpdate}
-                        isUpdating={isLoading}
-                        icon={Phone}
-                    />
-                    <EditableField
-                         label="Location"
-                         field="location.address"
-                         value={store.location?.address || 'Not set'}
-                         onSave={handleUpdate}
-                         isUpdating={isLoading}
-                         icon={MapPin}
-                    />
+                    {storeFields.map((field) => (
+                        <EditableField
+                            key={field.field}
+                            label={field.label}
+                            field={field.field}
+                            value={field.value}
+                            onSave={handleUpdate}
+                            isUpdating={isLoading}
+                            icon={field.icon}
+                        />
+                    ))}
                 </div>
             </div>
         </div>
@@ -156,26 +156,16 @@ const Profile = () => {
         {/* Side Column: Stats */}
         <div className="space-y-6">
             <div className="grid gap-4">
-                 <StatCard 
-                    label="Registered"
-                    value={store.createdAt ? new Date(store.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
-                    subtext="Store created"
-                    icon={Calendar}
-                 />
-                 
-                 <StatCard 
-                    label="Store Status"
-                    value={store.isActive ? 'Active' : 'Inactive'}
-                    trend={store.isActive ? 'active' : 'inactive'}
-                    icon={ShieldCheck}
-                 />
-
-                 <StatCard 
-                    label="Verification"
-                    value={store.verificationStatus || 'PENDING'}
-                    subtext="Current status"
-                    icon={Activity}
-                 />
+                 {statsCards.map((stat, index) => (
+                    <StatCard 
+                        key={index}
+                        label={stat.label}
+                        value={stat.value}
+                        subtext={stat.subtext}
+                        trend={stat.trend}
+                        icon={stat.icon}
+                    />
+                 ))}
             </div>
 
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-lg p-6 text-white text-center">

@@ -11,6 +11,30 @@ const Login = ({ onToggle, setIsLoggedIn }) => {
     const [login, { isLoading, error }] = useLoginMutation();
     const dispatch = useDispatch();
 
+    const loginFields = [
+        {
+            id: 'email',
+            name: 'email',
+            type: 'email',
+            label: 'Email Address',
+            placeholder: 'name@company.com',
+            leftIcon: <Mail className="w-5 h-5" />,
+        },
+        {
+            id: 'password',
+            name: 'password',
+            type: 'password',
+            label: 'Password',
+            placeholder: '••••••••',
+            leftIcon: <Lock className="w-5 h-5" />,
+            labelRight: (
+                <a href="#" className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+                    Forgot password?
+                </a>
+            ),
+        },
+    ];
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -34,34 +58,21 @@ const Login = ({ onToggle, setIsLoggedIn }) => {
             </div>
 
             <form className="space-y-5" onSubmit={handleLogin}>
-                <Input 
-                    id="email"
-                    name="email"
-                    type="email"
-                    label="Email Address"
-                    placeholder="name@company.com"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    leftIcon={<Mail className="w-5 h-5" />}
-                />
-                
-                <Input 
-                    id="password"
-                    name="password"
-                    type="password"
-                    label="Password"
-                    placeholder="••••••••"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    leftIcon={<Lock className="w-5 h-5" />}
-                    labelRight={
-                        <a href="#" className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline">
-                            Forgot password?
-                        </a>
-                    }
-                />
+                {loginFields.map((field) => (
+                    <Input 
+                        key={field.id}
+                        id={field.id}
+                        name={field.name}
+                        type={field.type}
+                        label={field.label}
+                        placeholder={field.placeholder}
+                        required
+                        value={formData[field.name]}
+                        onChange={handleChange}
+                        leftIcon={field.leftIcon}
+                        labelRight={field.labelRight}
+                    />
+                ))}
 
                 {error && (
                     <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm text-center font-medium animate-pulse">
