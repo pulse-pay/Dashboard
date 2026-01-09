@@ -64,7 +64,7 @@ const Landing = ({ setIsgetStarted }) => {
 
                 {/* Social Proof / Trust */}
                 <div className="pt-12 border-t border-gray-100 w-full max-w-2xl">
-                    <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-6">Trusted by modern teams</p>
+                    <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-6">Trusted by modern stores</p>
                     <div className="flex justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                         {/* Placeholders for logos */}
                         <div className="h-8 w-24 bg-gray-300/50 rounded animate-pulse"></div>
