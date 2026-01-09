@@ -7,44 +7,51 @@ import ScanEntry from './pages/ScanEntry';
 import Transactions from './pages/Transactions';
 import StoreProfile from './pages/StoreProfile';
 import { useState } from 'react';
+import AuthLayout from './components/layout/AuthLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import AuthLayout from './components/layout/AuthLayout';
+import Landing from './pages/Landing';
 
 const App = () => {
+  const [isgetStarted, setIsgetStarted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSigningUp, setIsSigningUp] = useState(false);
 
-  const auth= window.localStorage.getItem('auth');
-  if (auth) {
-    setIsLoggedIn(true);
-  }
+  const handleSetIsGetStarted = (value) => {
+    if (value) {
+      const auth = window.localStorage.getItem('auth');
+      if (auth) {
+        setIsLoggedIn(true);
+      }
+    }
+    setIsgetStarted(value);
+  };
 
-  if (!isLoggedIn) {
+  if (isLoggedIn) {
     return (
-      <AuthLayout>
-        {isSigningUp ? (
-          <Signup onToggle={() => setIsSigningUp(false)} />
-        ) : (
-          <Login onToggle={() => setIsSigningUp(true)} setIsLoggedIn={setIsLoggedIn} />
-        )}
-      </AuthLayout>
-    );
-  }
-
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<DashboardLayout />}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="clients" element={<Clients />} />
             <Route path="clients/:id" element={<ClientProfile />} />
             <Route path="scan-entry" element={<ScanEntry />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="store-profile" element={<StoreProfile />} />
-        </Route>
-      </Routes>
-    </Router>
+          </Route>
+        </Routes>
+      </Router>
+    );
+  }
+
+  return (
+    <AuthLayout isgetStarted={isgetStarted} setIsgetStarted={handleSetIsGetStarted}>
+      {isSigningUp ? (
+        <Signup onToggle={() => setIsSigningUp(false)} />
+      ) : (
+        <Login onToggle={() => setIsSigningUp(true)} setIsLoggedIn={setIsLoggedIn} />
+      )}
+    </AuthLayout>
   );
 };
 
