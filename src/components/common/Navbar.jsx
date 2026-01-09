@@ -1,8 +1,8 @@
 const Navbar = ({ setIsgetStarted }) => {
     return (
-        <nav className="w-full bg-white/10 rounded-full backdrop-blur-xl border-b border-white/20 px-6 py-4 flex items-center justify-between shadow-2xl">
+        <nav className="w-full bg-white/10 rounded-full backdrop-blur-xl border-b border-t border-white/20 mt-2 px-6 py-4 flex items-center justify-between shadow-2xl">
             <div className="flex items-center">
-                <h1 className="text-white font-bold text-3xl sm:text-4xl mb-0 tracking-tight">
+                <h1 className="font-bold text-3xl sm:text-4xl mb-0 tracking-tight shadow-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-gray-400">
                     PulsePay.Store
                 </h1>
             </div>
