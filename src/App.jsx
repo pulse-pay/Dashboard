@@ -8,9 +8,12 @@ import Transactions from './pages/Transactions';
 import StoreProfile from './pages/StoreProfile';
 import { useState } from 'react';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
+import AuthLayout from './components/layout/AuthLayout';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   const auth= window.localStorage.getItem('auth');
   if (auth) {
@@ -18,7 +21,15 @@ const App = () => {
   }
 
   if (!isLoggedIn) {
-    return <Login setIsLoggedIn={setIsLoggedIn} />;
+    return (
+      <AuthLayout>
+        {isSigningUp ? (
+          <Signup onToggle={() => setIsSigningUp(false)} />
+        ) : (
+          <Login onToggle={() => setIsSigningUp(true)} setIsLoggedIn={setIsLoggedIn} />
+        )}
+      </AuthLayout>
+    );
   }
 
   return (
