@@ -18,7 +18,7 @@ const formatCurrency = (amount) =>
 // Form fields configuration
 const formFields = [
     { name: 'name', label: 'Service Name', type: 'text', placeholder: 'e.g., Premium Gym Session' },
-    { name: 'ratePerMinute', label: 'Rate Per Minute (₹)', type: 'number', placeholder: 'e.g., 2.00', hint: 'Rate per second will be calculated automatically' },
+    { name: 'ratePerMinute', label: 'Rate Per Minute (₹)', type: 'number', placeholder: 'e.g., 1.20', hint: 'Rate per second will be auto-calculated and stored' },
     { name: 'minBalanceRequired', label: 'Minimum Balance Required (₹)', type: 'number', placeholder: 'e.g., 100', hint: 'Users need at least this balance to start a session' },
 ];
 
@@ -72,10 +72,14 @@ const Services = () => {
         if (!ratePerMinute || isNaN(rate) || rate <= 0) return setFormError('Rate per minute must be a valid positive number');
         if (!minBalanceRequired || isNaN(minBalance) || minBalance <= 0) return setFormError('Minimum balance must be a valid positive number');
 
+        // Calculate rate per second from rate per minute
+        const ratePerSecond = rate / 60;
+
         const serviceData = {
             storeId,
             name: name.trim(),
             ratePerMinute: rate,
+            ratePerSecond: ratePerSecond,
             minBalanceRequired: minBalance,
         };
 
@@ -83,6 +87,7 @@ const Services = () => {
             if (editingServiceId) {
                 await updateService({ id: editingServiceId, ...serviceData }).unwrap();
             } else {
+                console.log('Creating service with data:', serviceData);
                 await createService(serviceData).unwrap();
             }
             handleCloseForm();
@@ -151,7 +156,7 @@ const Services = () => {
                                         <IconBox icon={Package} variant={service.isActive ? 'blue' : 'gray'} size="sm" />
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-900 truncate group-hover:text-red-600">{service.name}</p>
-                                            <p className="text-xs text-gray-500">{formatCurrency(service.ratePerMinute)}/min</p>
+                                            <p className="text-xs text-gray-500">{formatCurrency(service.ratePerSecond ?? service.ratePerMinute / 60)}/sec</p>
                                         </div>
                                         <Trash2 className="w-4 h-4 text-gray-300 group-hover:text-red-500" />
                                     </button>
@@ -239,8 +244,10 @@ const Services = () => {
 
 // Service Card Component
 const ServiceCard = ({ service, onEdit, onToggle }) => {
+    // Use stored ratePerSecond or calculate from ratePerMinute
+    const ratePerSec = service.ratePerSecond ?? (service.ratePerMinute / 60);
     const detailRows = [
-        { icon: Clock, iconColor: 'text-blue-500', label: 'Rate / minute', value: formatCurrency(service.ratePerMinute) },
+        { icon: Clock, iconColor: 'text-blue-500', label: 'Rate / second', value: formatCurrency(ratePerSec) },
         { icon: Wallet, iconColor: 'text-purple-500', label: 'Min Balance', value: formatCurrency(service.minBalanceRequired) },
     ];
 
