@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/Dashboard';
+import Services from './pages/Services';
 import Clients from './pages/Clients';
 import ClientProfile from './pages/ClientProfile';
 import ScanEntry from './pages/ScanEntry';
@@ -43,6 +44,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="services" element={<Services />} />
             <Route path="clients" element={<Clients />} />
             <Route path="clients/:id" element={<ClientProfile />} />
             <Route path="scan-entry" element={<ScanEntry />} />

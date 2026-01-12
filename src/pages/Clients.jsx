@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
-import { Search, Plus, Filter, MoreHorizontal, Eye, EyeOff, Phone, Mail, Calendar, User, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, MoreHorizontal, Eye, EyeOff, Phone, Mail, Calendar, User, AlertCircle, RefreshCw, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useGetStoreClientsQuery } from '../store/api/storeAccountApi';
 import { selectClients } from '../store/slices/clientsSlice';
+import { PageHeader, StatusBadge, LoadingSpinner, SearchBar, Card, Button } from '../components/common';
+
+const STATUS_FILTERS = [
+  { value: 'All', label: 'All Status' },
+  { value: 'Active', label: 'Active' },
+  { value: 'Inactive', label: 'Inactive' },
+];
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,12 +70,7 @@ const Clients = () => {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="text-gray-500 font-medium">Loading clients...</p>
-      </div>
-    );
+    return <LoadingSpinner fullScreen text="Loading clients..." />;
   }
 
   // Error state
@@ -80,73 +82,44 @@ const Clients = () => {
         </div>
         <h3 className="text-lg font-semibold text-gray-900">Failed to load clients</h3>
         <p className="text-gray-500 text-sm">{error?.data?.message || 'Something went wrong'}</p>
-        <button 
-          onClick={refetch}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
-        >
+        <Button onClick={refetch} variant="primary">
           <RefreshCw className="w-4 h-4" />
           Try Again
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Client Management</h1>
-          <p className="text-gray-500 mt-1">
-            {transformedClients.length} client{transformedClients.length !== 1 ? 's' : ''} registered
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={refetch}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
-            title="Refresh clients"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-sm shadow-blue-200">
-            <Plus className="w-4 h-4" />
-            Add New Client
-          </button>
-        </div>
-      </div>
+      <PageHeader 
+        title="Client Management" 
+        subtitle={`${transformedClients.length} client${transformedClients.length !== 1 ? 's' : ''} registered`}
+      >
+        <button 
+          onClick={refetch}
+          className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+          title="Refresh clients"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
+        <Button variant="primary">
+          <Plus className="w-4 h-4" />
+          Add New Client
+        </Button>
+      </PageHeader>
 
-      {/* Controls Bar */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-         <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input 
-                type="text"
-                placeholder="Search clients..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder-gray-400 text-gray-700"
-            />
-         </div>
-         
-         <div className="flex items-center gap-2 w-full md:w-auto">
-             <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-200">
-                 <Filter className="w-4 h-4 text-gray-500" />
-                 <select 
-                    className="bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 cursor-pointer"
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                 >
-                     <option value="All">All Status</option>
-                     <option value="Active">Active</option>
-                     <option value="Inactive">Inactive</option>
-                 </select>
-             </div>
-         </div>
-      </div>
+      <SearchBar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Search clients..."
+        filters={STATUS_FILTERS}
+        selectedFilter={selectedStatus}
+        onFilterChange={setSelectedStatus}
+      />
 
       {/* Clients List */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <Card padding="p-0" className="overflow-hidden">
          <div className="overflow-x-auto">
              <table className="w-full text-left">
                  <thead>
@@ -187,14 +160,9 @@ const Clients = () => {
                                  </div>
                              </td>
                              <td className="px-6 py-4">
-                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                     client.status === 'Active' 
-                                     ? 'bg-green-50 text-green-700 border border-green-100' 
-                                     : 'bg-gray-100 text-gray-600 border border-gray-200'
-                                 }`}>
-                                     <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${client.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                                 <StatusBadge variant={client.status === 'Active' ? 'success' : 'default'}>
                                      {client.status}
-                                 </span>
+                                 </StatusBadge>
                              </td>
                              <td className="px-6 py-4">
                                  <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -238,7 +206,7 @@ const Clients = () => {
                 <p className="text-gray-500 mt-1">Try adjusting your search or filters</p>
             </div>
          )}
-      </div>
+      </Card>
     </div>
   );
 };

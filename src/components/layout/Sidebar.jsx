@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, QrCode, Receipt, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, QrCode, Receipt, CreditCard, Package } from 'lucide-react';
 
 const navItems = [
   {
@@ -7,6 +7,11 @@ const navItems = [
     label: 'Dashboard',
     icon: LayoutDashboard,
     end: true,
+  },
+  {
+    to: '/services',
+    label: 'Services',
+    icon: Package,
   },
   {
     to: '/clients',
