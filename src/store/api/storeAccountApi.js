@@ -90,6 +90,13 @@ export const storeAccountApi = createApi({
             transformResponse: (response) => response.data,
             providesTags: (result, error, storeId) => [{ type: 'Service', id: storeId }],
         }),
+
+        // Get store clients - GET /api/stores/:id/clients
+        getStoreClients: builder.query({
+            query: (storeId) => `/${storeId}/clients`,
+            transformResponse: (response) => response.data,
+            providesTags: (result, error, storeId) => [{ type: 'Store', id: `${storeId}-clients` }],
+        }),
     }),
 });
 
@@ -102,4 +109,5 @@ export const {
     useDeleteStoreMutation,
     useVerifyStoreMutation,
     useGetStoreServicesQuery,
+    useGetStoreClientsQuery,
 } = storeAccountApi;

@@ -25,7 +25,7 @@ const ClientProfile = () => {
     joinDate: 'Jan 15, 2023',
     status: 'Active',
     tier: 'Premium',
-    totalSpend: '$45,231.00',
+    totalSpend: '₹45,231.00',
     lastActive: '2 hours ago',
     avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=2563eb&color=fff&size=128'
   };
@@ -39,7 +39,7 @@ const ClientProfile = () => {
   ];
 
   const activityLog = [
-    { id: 1, type: 'payment', title: 'Payment Successful', desc: 'Processed $1,250.00 for Jan Subscription', time: '2 days ago', icon: CheckCircle, color: 'text-green-600 bg-green-50' },
+    { id: 1, type: 'payment', title: 'Payment Successful', desc: 'Processed ₹1,250.00 for Jan Subscription', time: '2 days ago', icon: CheckCircle, color: 'text-green-600 bg-green-50' },
     { id: 2, type: 'note', title: 'Note Added', desc: 'Meeting scheduled for Q2 pipeline review', time: '1 week ago', icon: FileText, color: 'text-blue-600 bg-blue-50' },
     { id: 3, type: 'system', title: 'System Alert', desc: 'Usage limit reached 80%', time: '2 weeks ago', icon: Shield, color: 'text-yellow-600 bg-yellow-50' },
   ];

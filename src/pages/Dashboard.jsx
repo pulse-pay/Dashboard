@@ -5,7 +5,7 @@ const KPI_CARDS = [
   {
     id: 'total-revenue',
     label: 'Total Revenue',
-    value: '$45,231',
+    value: '₹45,231',
     change: '+12.5%',
     trend: 'up',
     icon: DollarSign,
@@ -142,10 +142,10 @@ const Dashboard = () => {
                     dy={10}
                 />
                 <YAxis 
-                    axisLine={false} 
+                    axisLine={false}
                     tickLine={false} 
                     tick={{ fill: '#6b7280', fontSize: 12 }} 
-                    tickFormatter={(value) => `$${value / 1000}k`}
+                    tickFormatter={(value) => `₹${value / 1000}k`}
                 />
                 <Tooltip 
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}

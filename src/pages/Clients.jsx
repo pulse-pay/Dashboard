@@ -1,22 +1,50 @@
 import { Link } from 'react-router-dom';
-import { Search, Plus, Filter, MoreHorizontal, Eye, EyeOff, Phone, Mail, Calendar, User } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, Eye, EyeOff, Phone, Mail, Calendar, User, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useGetStoreClientsQuery } from '../store/api/storeAccountApi';
+import { selectClients } from '../store/slices/clientsSlice';
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [revealedIds, setRevealedIds] = useState(new Set());
   const [selectedStatus, setSelectedStatus] = useState('All');
 
-  const clientsData = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1 (555) 123-4567', status: 'Active', joinDate: 'Jan 15, 2024', avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=2563eb&color=fff' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+1 (555) 234-5678', status: 'Active', joinDate: 'Jan 10, 2024', avatar: 'https://ui-avatars.com/api/?name=Jane+Smith&background=db2777&color=fff' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', phone: '+1 (555) 345-6789', status: 'Inactive', joinDate: 'Dec 20, 2023', avatar: 'https://ui-avatars.com/api/?name=Bob+Johnson&background=4b5563&color=fff' },
-    { id: 4, name: 'Alice Williams', email: 'alice@example.com', phone: '+1 (555) 456-7890', status: 'Active', joinDate: 'Jan 5, 2024', avatar: 'https://ui-avatars.com/api/?name=Alice+Williams&background=059669&color=fff' },
-    { id: 5, name: 'Charlie Brown', email: 'charlie@example.com', phone: '+1 (555) 567-8901', status: 'Active', joinDate: 'Dec 28, 2023', avatar: 'https://ui-avatars.com/api/?name=Charlie+Brown&background=d97706&color=fff' },
-    { id: 6, name: 'Diana Prince', email: 'diana@example.com', phone: '+1 (555) 678-9012', status: 'Inactive', joinDate: 'Dec 15, 2023', avatar: 'https://ui-avatars.com/api/?name=Diana+Prince&background=7c3aed&color=fff' },
-  ];
+  // Get store ID from auth state
+  const store = useSelector((state) => state.auth.store);
+  const storeId = store?._id || store?.id;
 
-  const filteredClients = clientsData.filter((client) => {
+  // Fetch clients from API
+  const { 
+    data: clientsData = [], 
+    isLoading, 
+    isError, 
+    error,
+    refetch 
+  } = useGetStoreClientsQuery(storeId, {
+    skip: !storeId, // Skip query if no store ID
+  });
+
+  // Get clients from Redux store (synced via extraReducers)
+  const storeClients = useSelector(selectClients);
+
+  // Use API data directly, fallback to store clients
+  const clients = clientsData.length > 0 ? clientsData : storeClients;
+
+  // Transform API data to match UI format
+  const transformedClients = clients.map((client) => ({
+    id: client._id || client.id,
+    name: client.name || `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Unknown',
+    email: client.email || 'N/A',
+    phone: client.phone || client.phoneNumber || 'N/A',
+    status: client.status === 'active' || client.isActive ? 'Active' : 'Inactive',
+    joinDate: client.createdAt 
+      ? new Date(client.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : 'N/A',
+    avatar: client.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(client.name || 'User')}&background=2563eb&color=fff`,
+  }));
+
+  const filteredClients = transformedClients.filter((client) => {
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           client.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'All' || client.status === selectedStatus;
@@ -33,18 +61,59 @@ const Clients = () => {
     setRevealedIds(newRevealed);
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+        <p className="text-gray-500 font-medium">Loading clients...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-red-500" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900">Failed to load clients</h3>
+        <p className="text-gray-500 text-sm">{error?.data?.message || 'Something went wrong'}</p>
+        <button 
+          onClick={refetch}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Client Management</h1>
-          <p className="text-gray-500 mt-1">Manage your customer base and view detailed profiles</p>
+          <p className="text-gray-500 mt-1">
+            {transformedClients.length} client{transformedClients.length !== 1 ? 's' : ''} registered
+          </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-sm shadow-blue-200">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={refetch}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+            title="Refresh clients"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-sm shadow-blue-200">
             <Plus className="w-4 h-4" />
             Add New Client
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Controls Bar */}
