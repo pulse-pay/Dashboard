@@ -1,83 +1,69 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Store, User, Mail, Phone, Lock, MapPin } from 'lucide-react';
+import { Store, User, Mail, Phone, Lock, MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { useSignupMutation } from '../store/api/storeAccountApi';
 import { setCredentials } from '../store/slices/authSlice';
 
+const STORE_TYPES = [
+    { value: 'GYM', label: 'Gym' },
+    { value: 'EV', label: 'EV Charging' },
+    { value: 'WIFI', label: 'WiFi Hotspot' },
+    { value: 'PARKING', label: 'Parking' },
+];
+
+const STEP_FIELDS = {
+    1: [
+        { name: 'email', type: 'email', label: 'Email Address', placeholder: 'store@company.com', icon: Mail },
+        { name: 'phone', type: 'tel', label: 'Phone Number', placeholder: '+1234567890', icon: Phone },
+        { name: 'password', type: 'password', label: 'Password', placeholder: '••••••••', icon: Lock },
+    ],
+    2: [
+        { name: 'ownerName', type: 'text', label: 'Owner Name', placeholder: 'John Doe', icon: User },
+        { name: 'storeName', type: 'text', label: 'Store Name', placeholder: 'FitZone Gym', icon: Store },
+        { name: 'address', type: 'text', label: 'Address', placeholder: '123 Main St, City', icon: MapPin },
+    ],
+};
+
+const STEP_LABELS = { 1: 'Account Credentials', 2: 'Store Details' };
+
 const Signup = ({ onToggle, setIsLoggedIn }) => {
+    const [step, setStep] = useState(1);
+    const [isAnimating, setIsAnimating] = useState(false);
     const [formData, setFormData] = useState({
-        storeName: '',
-        ownerName: '',
-        email: '',
-        phone: '',
-        password: '',
-        storeType: 'GYM',
-        location: { address: '', lat: 0, lng: 0 }
+        storeName: '', ownerName: '', email: '', phone: '', password: '',
+        storeType: 'GYM', location: { address: '', lat: 0, lng: 0 }
     });
+    
     const [signup, { isLoading, error }] = useSignupMutation();
     const dispatch = useDispatch();
 
-    const signupFields = [
-        {
-            id: 'storeName',
-            name: 'storeName',
-            type: 'text',
-            label: 'Store Name',
-            placeholder: 'FitZone Gym',
-            leftIcon: <Store className="w-5 h-5" />,
-        },
-        {
-            id: 'ownerName',
-            name: 'ownerName',
-            type: 'text',
-            label: 'Owner Name',
-            placeholder: 'John Doe',
-            leftIcon: <User className="w-5 h-5" />,
-        },
-        {
-            id: 'email',
-            name: 'email',
-            type: 'email',
-            label: 'Email Address',
-            placeholder: 'store@company.com',
-            leftIcon: <Mail className="w-5 h-5" />,
-        },
-        {
-            id: 'phone',
-            name: 'phone',
-            type: 'tel',
-            label: 'Phone Number',
-            placeholder: '+1234567890',
-            leftIcon: <Phone className="w-5 h-5" />,
-        },
-        {
-            id: 'address',
-            name: 'address',
-            type: 'text',
-            label: 'Address',
-            placeholder: '123 Main St, City',
-            leftIcon: <MapPin className="w-5 h-5" />,
-            customValue: 'location.address',
-        },
-        {
-            id: 'password',
-            name: 'password',
-            type: 'password',
-            label: 'Password',
-            placeholder: '••••••••',
-            leftIcon: <Lock className="w-5 h-5" />,
-        },
-    ];
+    const currentFields = STEP_FIELDS[step];
+    const animationClass = isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100';
+
+    const getValue = (name) => name === 'address' ? formData.location.address : formData[name];
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'address') {
+        setFormData(prev => name === 'address' 
+            ? { ...prev, location: { ...prev.location, address: value } }
+            : { ...prev, [name]: value }
+        );
+    };
 
-            setFormData({ ...formData, location: { ...formData.location, address: value } });
-        } else {
-            setFormData({ ...formData, [name]: value });
+    const animateStep = (nextStep) => {
+        setIsAnimating(true);
+        setTimeout(() => {
+            setStep(nextStep);
+            setIsAnimating(false);
+        }, 200);
+    };
+
+    const handleNext = (e) => {
+        e.preventDefault();
+        if (formData.email && formData.phone && formData.password) {
+            animateStep(2);
         }
     };
 
@@ -86,83 +72,92 @@ const Signup = ({ onToggle, setIsLoggedIn }) => {
         try {
             const result = await signup(formData).unwrap();
             dispatch(setCredentials({ store: result }));
-            if (setIsLoggedIn) setIsLoggedIn(true);
+            setIsLoggedIn?.(true);
         } catch (err) {
             console.error('Signup failed:', err);
         }
     };
 
+    const renderFields = () => currentFields.map(({ name, type, label, placeholder, icon: Icon }) => (
+        <Input
+            key={name}
+            id={name}
+            name={name}
+            type={type}
+            label={label}
+            placeholder={placeholder}
+            required
+            value={getValue(name)}
+            onChange={handleChange}
+            leftIcon={<Icon className="w-5 h-5" />}
+        />
+    ));
+
+    const renderError = () => error && (
+        <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm text-center font-medium animate-pulse">
+            {error.data?.message || 'Signup failed. Please check your details.'}
+        </div>
+    );
+
     return (
-        <div className="w-full">
+        <div className="w-full overflow-hidden">
             <div className="text-center mb-8">
                 <h1 className="text-gray-900 font-bold text-3xl mb-2 tracking-tight">Create Store Account</h1>
                 <p className="text-gray-500 text-sm">Register your business on PulsePay</p>
+                
+                <div className="flex items-center justify-center gap-3 mt-6">
+                    {[1, 2].map((s, i) => (
+                        <div key={s} className="flex items-center gap-3">
+                            {i > 0 && <div className={`w-12 h-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-blue-600' : 'bg-gray-200'}`} />}
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                                {s}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-3">{STEP_LABELS[step]}</p>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSignup}>
-                {signupFields.slice(0, 4).map((field) => (
-                    <Input
-                        key={field.id}
-                        id={field.id}
-                        name={field.name}
-                        type={field.type}
-                        label={field.label}
-                        placeholder={field.placeholder}
-                        required
-                        value={formData[field.name]}
-                        onChange={handleChange}
-                        leftIcon={field.leftIcon}
-                    />
-                ))}
+            <form 
+                className={`space-y-4 transition-all duration-200 ease-out ${animationClass}`}
+                onSubmit={step === 1 ? handleNext : handleSignup}
+            >
+                {renderFields()}
 
-                <div className="space-y-1.5">
-                    <label htmlFor="storeType" className="text-sm font-semibold text-gray-700 ml-1">
-                        Store Type
-                    </label>
-                    <select
-                        id="storeType"
-                        name="storeType"
-                        value={formData.storeType}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium shadow-sm"
-                    >
-                        <option value="GYM">Gym</option>
-                        <option value="EV">EV Charging</option>
-                        <option value="WIFI">WiFi Hotspot</option>
-                        <option value="PARKING">Parking</option>
-                    </select>
-                </div>
-
-                {signupFields.slice(4).map((field) => (
-                    <Input
-                        key={field.id}
-                        id={field.id}
-                        name={field.name}
-                        type={field.type}
-                        label={field.label}
-                        placeholder={field.placeholder}
-                        required
-                        value={field.customValue === 'location.address' ? formData.location.address : formData[field.name]}
-                        onChange={handleChange}
-                        leftIcon={field.leftIcon}
-                    />
-                ))}
-
-                {error && (
-                    <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm text-center font-medium animate-pulse">
-                        {error.data?.message || 'Signup failed. Please check your details.'}
+                {step === 2 && (
+                    <div className="space-y-1.5">
+                        <label htmlFor="storeType" className="text-sm font-semibold text-gray-700 ml-1">Store Type</label>
+                        <select
+                            id="storeType"
+                            name="storeType"
+                            value={formData.storeType}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium shadow-sm"
+                        >
+                            {STORE_TYPES.map(({ value, label }) => (
+                                <option key={value} value={value}>{label}</option>
+                            ))}
+                        </select>
                     </div>
                 )}
 
-                <Button
-                    type="submit"
-                    variant="primary"
-                    isLoading={isLoading}
-                    className="w-full py-3 text-base shadow-xl shadow-blue-600/10 mt-2"
-                >
-                    Create Account
-                </Button>
+                {renderError()}
+
+                {step === 1 ? (
+                    <Button type="submit" variant="primary" className="w-full py-3 text-base shadow-xl shadow-blue-600/10 mt-2 flex items-center justify-center gap-2">
+                        Next <ArrowRight className="w-4 h-4" />
+                    </Button>
+                ) : (
+                    <div className="flex gap-3 mt-2">
+                        <Button type="button" variant="secondary" onClick={() => animateStep(1)} className="py-3 px-4 flex items-center justify-center gap-2">
+                            <ArrowLeft className="w-4 h-4" /> Back
+                        </Button>
+                        <Button type="submit" variant="primary" isLoading={isLoading} className="flex-1 py-3 text-base shadow-xl shadow-blue-600/10">
+                            Create Account
+                        </Button>
+                    </div>
+                )}
             </form>
 
             <div className="mt-8 text-center">
@@ -172,6 +167,6 @@ const Signup = ({ onToggle, setIsLoggedIn }) => {
             </div>
         </div>
     );
-}
+};
 
 export default Signup;
