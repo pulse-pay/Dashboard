@@ -17,7 +17,16 @@ A modern React + Vite dashboard application for managing clients, transactions, 
 - **React 18** - UI library
 - **Vite** - Lightning-fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
+- **Redux Toolkit & RTK Query** - State management and data fetching
 - **ESLint** - Code quality and consistency
+
+## Backend Integration
+
+The frontend integrates with a RESTful backend API organized around core domain entities:
+
+- **Store Accounts (`/api/stores`)**: Handling store registration, authentication, business profiles, and verification status.
+- **Services (`/api/services`)**: Managing the lifecycle of services, including creation, updates, toggling active states, and fetching by QR codes.
+- **Data Fetching via RTK Query**: All server communications, caching, and state synchronization are powered by Redux Toolkit Query (`src/store/api/`). This includes automated tag-based cache invalidation to ensure UI reflects the latest backend states without manual polling.
 
 ## Getting Started
 
